@@ -1,0 +1,110 @@
+/*
+ *  Program: line_following_black
+ *  
+ *  Reads an input from the line following sensors panel connected at pins A1,A2,A3
+ *  and drives the left and right motor to trace the line 
+ *  Background Color: White
+ *  Line Color: Black
+ *  Sensor sequence -->  Sensor orientation: LED's facing forward
+                         |----------------------------------------------|
+                         |---A4----------A3-----A2-----A1----------A0---|
+                         |----------------------------------------------|
+                                      sensors utilised A3-A1
+ *  
+ *  Digital Sensor Output:  Black = 0
+ *                          White = 1
+ *  Serial Baudrate: 9600 baud
+ *  
+ *  Author: Robosoft Systems for Nexus Workshop
+*/
+ 
+// Left Motor Controls (Motor B) 
+
+// Clockwise and counter-clockwise definitions.
+// Depending on how you wired your motors, you may need to swap.
+# define CW 0 
+# define CCW 1
+
+//Motor definitions to make life easier
+# define MOTOR_A 0
+# define MOTOR_B 1
+
+
+
+// Pin Assignments //
+// Don't change these! These pins are statically defined by shield layout
+const byte PWMA = 3;  // PWM control (speed) for motor A (Right) 
+const byte PWMB = 11; // PWM control (speed) for motor B (Left) 
+const byte DIRA = 12; // Direction control for motor A (Right) 
+const byte DIRB = 13; // Direction control for motor B (Left) 
+
+const byte speedL = 200;
+const byte speedR = 200;
+
+// Grid Sensors // holding the bot with gripper oriented outwards
+# define Rs   A3
+# define Ms   A1
+# define Ls   A0
+ 
+void setup()
+{  // put your setup code here, to run once:
+  Serial.begin(9600);
+  // All pins should be setup as outputs:
+  pinMode(PWMA, OUTPUT);
+  pinMode(PWMB, OUTPUT);
+  pinMode(DIRA, OUTPUT);
+  pinMode(DIRB, OUTPUT);
+
+ 
+  pinMode (Rs, OUTPUT);    // A1
+  pinMode (Ms, OUTPUT);    // A2
+  pinMode (Ls, OUTPUT);    // A3
+}
+ 
+void loop()  {
+// put your code here to run for ever
+  if ((!digitalRead(Ls)) && (!digitalRead(Ms)) && (!digitalRead(Rs)))       // if all black
+     {  MotorControl(1,1); Serial.println("forward");   }
+  else if ((digitalRead(Ls)) && (!digitalRead(Ms)) && (!digitalRead(Rs)))    // if left on white // S3 out
+     {  MotorControl(1,0); Serial.println("right"); }
+  else if ((digitalRead(Ls)) && (digitalRead(Ms)) && (!digitalRead(Rs)))    // if left & middle on white // S3 & s2 out
+     {  MotorControl(1,0); Serial.println("right sharp"); }
+  else if ((!digitalRead(Ls)) && (!digitalRead(Ms)) && (digitalRead(Rs)))    // if right on white // s1 out
+     {  MotorControl(0,1); Serial.println("left"); }
+  else if ((!digitalRead(Ls)) && (digitalRead(Ms)) && (digitalRead(Rs)))    // if right & middle on white // S2 & s1 out
+     {  MotorControl(0,1); Serial.println("left sharp"); }
+}
+ 
+ 
+void MotorControl(int driveL, int driveR)
+{
+switch (driveL) {
+ 
+    case 0:                  // lft STOP
+      analogWrite (PWMB,0);
+      digitalWrite (DIRB,LOW);
+      break;
+ 
+    case 1:                  // lft FORWARD
+      analogWrite (PWMB,speedL);
+      digitalWrite (DIRB,HIGH);
+      break;
+ 
+    default:break;
+  } 
+ 
+switch (driveR) {
+ 
+    case 0:                  // rgt STOP
+      analogWrite (PWMA,0);
+      digitalWrite (DIRA,LOW);
+      break;
+ 
+    case 1:                  // rgt FORWARD
+      analogWrite (PWMA,speedR);
+      digitalWrite (DIRA,HIGH);
+      break;
+ 
+    default:break;
+  }  
+}
